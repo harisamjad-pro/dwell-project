@@ -7,8 +7,6 @@ type ChatMessage = {
 
 function cleanApiKey(value?: string) {
   if (!value) return undefined;
-
-  // Makes accidental values such as `Bearer sk-...` work too.
   return value.trim().replace(/^Bearer\s+/i, "");
 }
 
@@ -25,7 +23,20 @@ function apiRoot(value: string) {
   return value.replace(/\/$/, "");
 }
 
-async function ollamaFetch(
+function cloudModelName(model: string) {
+  const normalized = model.trim();
+  if (normalized.endsWith("-cloud") || normalized.endsWith(":cloud")) return normalized;
+
+  const aliases: Record<string, string> = {
+    "gpt-oss:20b": "gpt-oss:20b-cloud",
+    "gpt-oss:120b": "gpt-oss:120b-cloud",
+    "gemma4:31b": "gemma4:31b-cloud",
+  };
+
+  return aliases[normalized] ?? normalized;
+}
+
+async function ollamaPost(
   url: string,
   body: unknown,
   apiKey?: string,
@@ -40,23 +51,52 @@ async function ollamaFetch(
     cache: "no-store",
   });
 
+  const detail = response.ok ? undefined : await response.text();
+  return { response, detail };
+}
+
+function authError() {
+  return new Error(
+    "Ollama Cloud authentication failed (401). Check OLLAMA_API_KEY in .env.local, or use Ollama's local Cloud connection with `ollama signin` and a `*-cloud` model.",
+  );
+}
+
+async function callChat(
+  url: string,
+  model: string,
+  messages: ChatMessage[],
+  apiKey?: string,
+) {
+  const { response, detail } = await ollamaPost(
+    url,
+    {
+      model,
+      messages,
+      stream: false,
+      format: "json",
+      options: { temperature: 0.2 },
+    },
+    apiKey,
+  );
+
   if (!response.ok) {
-    const detail = await response.text();
-
-    if (response.status === 401) {
-      throw new Error(
-        "Ollama Cloud authentication failed (401). Check OLLAMA_API_KEY in .env.local. Use the raw API key only — do not prefix it with `Bearer`.",
-      );
-    }
-
-    throw new Error(`Ollama request failed (${response.status}): ${detail}`);
+    if (response.status === 401) throw authError();
+    throw new Error(`Ollama request failed (${response.status}): ${detail ?? "Unknown error"}`);
   }
 
-  return response.json() as Promise<Record<string, unknown>>;
+  const data = (await response.json()) as Record<string, unknown>;
+  const message = data.message as { content?: unknown } | undefined;
+  const content = message?.content;
+
+  if (typeof content !== "string") {
+    throw new Error("Ollama returned an invalid chat payload.");
+  }
+
+  return JSON.parse(content);
 }
 
 export async function embedText(input: string | string[]) {
-  const data = await ollamaFetch(
+  const dataResult = await ollamaPost(
     `${apiRoot(env.OLLAMA_EMBEDDING_URL)}/embed`,
     {
       model: env.OLLAMA_EMBEDDING_MODEL,
@@ -65,7 +105,16 @@ export async function embedText(input: string | string[]) {
     },
   );
 
+  if (!dataResult.response.ok) {
+    if (dataResult.response.status === 401) throw authError();
+    throw new Error(
+      `Ollama embedding request failed (${dataResult.response.status}): ${dataResult.detail ?? "Unknown error"}`,
+    );
+  }
+
+  const data = (await dataResult.response.json()) as Record<string, unknown>;
   const embeddings = data.embeddings;
+
   if (!Array.isArray(embeddings) || !embeddings.every(Array.isArray)) {
     throw new Error("Ollama returned an invalid embedding payload.");
   }
@@ -75,62 +124,52 @@ export async function embedText(input: string | string[]) {
 
 export async function chatJson<T>(messages: ChatMessage[]) {
   const configuredUrl = env.OLLAMA_LLM_URL.trim();
-  const cloud = isOllamaCloudUrl(configuredUrl);
+  const cloudApi = isOllamaCloudUrl(configuredUrl);
   const apiKey = cleanApiKey(env.OLLAMA_API_KEY);
+  const model = env.OLLAMA_LLM_MODEL;
 
-  if (cloud && !apiKey) {
-    throw new Error("OLLAMA_API_KEY is required for Ollama Cloud.");
+  if (!cloudApi) {
+    return (await callChat(
+      `${apiRoot(configuredUrl)}/chat`,
+      model,
+      messages,
+    )) as T;
   }
 
-  let url: string;
-  let body: Record<string, unknown>;
-
-  if (cloud) {
-    // Ollama's current direct cloud API is OpenAI-compatible.
-    const root = configuredUrl.replace(/\/api\/?$/, "").replace(/\/$/, "");
-    url = `${root}/v1/chat/completions`;
-    body = {
-      model: env.OLLAMA_LLM_MODEL,
-      messages,
-      stream: false,
-      response_format: { type: "json_object" },
-      temperature: 0.2,
-    };
-  } else {
-    const root = apiRoot(configuredUrl);
-    url = `${root}/chat`;
-    body = {
-      model: env.OLLAMA_LLM_MODEL,
-      messages,
-      stream: false,
-      format: "json",
-      options: {
-        temperature: 0.2,
-      },
-    };
+  if (apiKey) {
+    try {
+      // Ollama's documented direct Cloud endpoint.
+      return (await callChat(
+        `${apiRoot(configuredUrl)}/chat`,
+        model,
+        messages,
+        apiKey,
+      )) as T;
+    } catch (error) {
+      // During local development, prefer Ollama's signed-in Cloud connection if
+      // the dashboard API key is rejected or unavailable.
+      if (!(error instanceof Error) || !error.message.includes("authentication failed (401)")) {
+        throw error;
+      }
+    }
   }
 
-  const data = await ollamaFetch(url, body, apiKey);
+  const localUrl = "http://localhost:11434/api/chat";
+  const localModel = cloudModelName(model);
 
-  const choices = data.choices as Array<{
-    message?: { content?: unknown };
-  }> | undefined;
-
-  if (Array.isArray(choices)) {
-    const content = choices[0]?.message?.content;
-    if (typeof content !== "string") {
-      throw new Error("Ollama returned an invalid chat completion payload.");
+  try {
+    return (await callChat(localUrl, localModel, messages)) as T;
+  } catch (localError) {
+    if (apiKey) {
+      throw new Error(
+        `${authError().message} Local Ollama fallback also failed: ${
+          localError instanceof Error ? localError.message : "unknown local error"
+        }`,
+      );
     }
 
-    return JSON.parse(content) as T;
+    throw new Error(
+      `Ollama Cloud is not authenticated. Run \`ollama signin\` and make sure \`${localModel}\` is available, or configure a valid OLLAMA_API_KEY.`,
+    );
   }
-
-  // Keep local/native Ollama responses supported.
-  const message = data.message as { content?: unknown } | undefined;
-  const content = message?.content;
-  if (typeof content !== "string") {
-    throw new Error("Ollama returned an invalid chat payload.");
-  }
-
-  return JSON.parse(content) as T;
 }

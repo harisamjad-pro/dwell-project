@@ -25,11 +25,15 @@ const rowSchema = z.object({
 
 const explanationSchema = z.object({
   explanations: z.array(
-    z.object({ listingId: z.string(), reasons: z.array(z.string()).min(1).max(4) }),
+    z.object({
+      listingId: z.string(),
+      reasons: z.array(z.string().min(1)).min(1).max(4),
+    }),
   ),
 });
 
-const RESULT_LIMIT = 5;
+const RESULT_LIMIT = 20;
+const MIN_MATCH_SCORE = 0.46;
 
 export async function semanticSearch(
   query: string,
@@ -54,6 +58,7 @@ export async function semanticSearch(
     center_lng: filters.lng ?? null,
     radius_miles: filters.radiusMiles ?? null,
     result_limit: RESULT_LIMIT,
+    min_match_score: MIN_MATCH_SCORE,
   });
 
   if (error) throw new Error(error.message);
@@ -82,7 +87,7 @@ export async function semanticSearch(
   let explanations: { listingId: string; reasons: string[] }[] = [];
   try {
     const response = await chatJson<unknown>(
-      buildExplanationMessages(query, results),
+      buildExplanationMessages(query, results.slice(0, 8)),
     );
     explanations = explanationSchema.parse(response).explanations;
   } catch {
@@ -102,4 +107,5 @@ export const searchConfig = {
   embeddingModel: env.OLLAMA_EMBEDDING_MODEL,
   llmModel: env.OLLAMA_LLM_MODEL,
   resultLimit: RESULT_LIMIT,
+  minMatchScore: MIN_MATCH_SCORE,
 };

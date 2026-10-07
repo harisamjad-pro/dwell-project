@@ -255,7 +255,7 @@ export function SearchShell() {
                   <h2 className="mt-2 text-2xl font-semibold tracking-[-0.03em]">{results.results.length} homes matched your description</h2>
                   <p className="mt-1 text-sm text-[#737871]">Searched for “{results.query}”</p>
                 </div>
-                <div className="hidden rounded-full border border-[#dcd9d1] bg-white/65 px-3 py-1.5 text-xs text-[#6c736c] sm:block">5 max results · semantic rank</div>
+                <div className="hidden rounded-full border border-[#dcd9d1] bg-white/65 px-3 py-1.5 text-xs text-[#6c736c] sm:block">Only strong matches · semantic rank</div>
               </div>
 
               {results.results.length > 0 ? (
@@ -269,8 +269,8 @@ export function SearchShell() {
               ) : (
                 <div className="mt-6 rounded-[28px] border border-dashed border-[#cecac0] bg-white/45 p-10 text-center">
                   <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-2xl bg-[#edf2eb] text-[#48624f]"><Search size={18} /></div>
-                  <h3 className="mt-4 text-lg font-semibold">Nothing matched those hard constraints.</h3>
-                  <p className="mt-2 text-sm text-[#737871]">Try loosening price, beds, area, or radius while keeping the natural-language description intact.</p>
+                  <h3 className="mt-4 text-lg font-semibold">No strong semantic matches.</h3>
+                  <p className="mt-2 text-sm text-[#737871]">Try rephrasing the description, or loosen price, beds, area, or radius. Dwell intentionally does not fill the list with weak matches.</p>
                 </div>
               )}
             </>
