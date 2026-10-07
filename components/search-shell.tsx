@@ -197,7 +197,7 @@ export function SearchShell() {
                     placeholder="10"
                     className="h-10 w-full rounded-xl border border-[#dedbd2] bg-white px-3 text-sm outline-none focus:border-[#92a697]"
                   />
-                  <div className="mt-1 text-[10px] leading-4 text-[#898d87]">Uses the demo area's center when a known area is selected.</div>
+                  <div className="mt-1 text-[10px] leading-4 text-[#898d87]">Uses the demo area&apos;s center when a known area is selected.</div>
                 </div>
                 <div className="flex items-end">
                   <button
@@ -281,7 +281,7 @@ export function SearchShell() {
                   <div className="text-xs font-semibold uppercase tracking-[0.14em] text-[#7a857d]">What makes this different</div>
                   <h2 className="mt-3 text-3xl font-semibold tracking-[-0.04em]">Meaning first. Filters second.</h2>
                   <p className="mt-4 max-w-xl text-sm leading-6 text-[#70766f]">
-                    The listing descriptions are chunked and embedded once during ingestion. Searches only embed the user's query, then Postgres finds the nearest matching chunks while applying hard filters in the same SQL function.
+                    The listing descriptions are chunked and embedded once during ingestion. Searches only embed the user&apos;s query, then Postgres finds the nearest matching chunks while applying hard filters in the same SQL function.
                   </p>
                 </div>
                 <div className="grid gap-3 sm:grid-cols-3 lg:grid-cols-1">
