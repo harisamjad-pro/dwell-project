@@ -29,13 +29,22 @@ const explanationSchema = z.object({
   ),
 });
 
-export async function semanticSearch(query: string, filters: SearchFilters): Promise<{ results: Listing[]; explanations: { listingId: string; reasons: string[] }[] }> {
+const RESULT_LIMIT = 5;
+
+export async function semanticSearch(
+  query: string,
+  filters: SearchFilters,
+): Promise<{
+  results: Listing[];
+  explanations: { listingId: string; reasons: string[] }[];
+}> {
   const [embedding] = await embedText(query);
   if (!embedding) throw new Error("Failed to create a query embedding.");
 
   const supabase = getSupabase();
   const { data, error } = await supabase.rpc("search_dwell_listings", {
     query_embedding: embedding,
+    query_text: query,
     min_price: filters.minPrice ?? null,
     max_price: filters.maxPrice ?? null,
     min_beds: filters.minBeds ?? null,
@@ -44,7 +53,7 @@ export async function semanticSearch(query: string, filters: SearchFilters): Pro
     center_lat: filters.lat ?? null,
     center_lng: filters.lng ?? null,
     radius_miles: filters.radiusMiles ?? null,
-    result_limit: 8,
+    result_limit: RESULT_LIMIT,
   });
 
   if (error) throw new Error(error.message);
@@ -72,10 +81,12 @@ export async function semanticSearch(query: string, filters: SearchFilters): Pro
 
   let explanations: { listingId: string; reasons: string[] }[] = [];
   try {
-    const response = await chatJson<unknown>(buildExplanationMessages(query, results.slice(0, 6)));
+    const response = await chatJson<unknown>(
+      buildExplanationMessages(query, results),
+    );
     explanations = explanationSchema.parse(response).explanations;
   } catch {
-    explanations = results.slice(0, 6).map((listing) => ({
+    explanations = results.map((listing) => ({
       listingId: listing.id,
       reasons: [
         "Semantic match: the listing contains concepts close to your search.",
@@ -87,4 +98,8 @@ export async function semanticSearch(query: string, filters: SearchFilters): Pro
   return { results, explanations };
 }
 
-export const searchConfig = { embeddingModel: env.OLLAMA_EMBEDDING_MODEL, llmModel: env.OLLAMA_LLM_MODEL };
+export const searchConfig = {
+  embeddingModel: env.OLLAMA_EMBEDDING_MODEL,
+  llmModel: env.OLLAMA_LLM_MODEL,
+  resultLimit: RESULT_LIMIT,
+};

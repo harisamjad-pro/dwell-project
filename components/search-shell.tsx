@@ -255,7 +255,7 @@ export function SearchShell() {
                   <h2 className="mt-2 text-2xl font-semibold tracking-[-0.03em]">{results.results.length} homes matched your description</h2>
                   <p className="mt-1 text-sm text-[#737871]">Searched for “{results.query}”</p>
                 </div>
-                <div className="hidden rounded-full border border-[#dcd9d1] bg-white/65 px-3 py-1.5 text-xs text-[#6c736c] sm:block">8 max results · semantic rank</div>
+                <div className="hidden rounded-full border border-[#dcd9d1] bg-white/65 px-3 py-1.5 text-xs text-[#6c736c] sm:block">5 max results · semantic rank</div>
               </div>
 
               {results.results.length > 0 ? (
