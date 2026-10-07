@@ -2,6 +2,7 @@ import { z } from "zod";
 import { getSupabase } from "./supabase";
 import { embedText, chatJson } from "./ollama";
 import { buildExplanationMessages } from "./prompts";
+import { understandQuery } from "./query-understanding";
 import type { Listing, SearchFilters } from "./types";
 import { env } from "./env";
 
@@ -21,6 +22,7 @@ const rowSchema = z.object({
   longitude: z.number(),
   semantic_score: z.number(),
   matched_chunk: z.string().nullable().optional(),
+  matched_signals: z.array(z.string()).nullable().optional(),
 });
 
 const explanationSchema = z.object({
@@ -33,7 +35,7 @@ const explanationSchema = z.object({
 });
 
 const RESULT_LIMIT = 20;
-const MIN_MATCH_SCORE = 0.46;
+const MIN_MATCH_SCORE = 0.34;
 
 export async function semanticSearch(
   query: string,
@@ -41,22 +43,27 @@ export async function semanticSearch(
 ): Promise<{
   results: Listing[];
   explanations: { listingId: string; reasons: string[] }[];
+  hardConstraints: string[];
 }> {
-  const [embedding] = await embedText(query);
+  const plan = understandQuery(query, filters);
+  const [embedding] = await embedText(plan.semanticQuery);
   if (!embedding) throw new Error("Failed to create a query embedding.");
 
   const supabase = getSupabase();
   const { data, error } = await supabase.rpc("search_dwell_listings", {
     query_embedding: embedding,
     query_text: query,
-    min_price: filters.minPrice ?? null,
-    max_price: filters.maxPrice ?? null,
-    min_beds: filters.minBeds ?? null,
-    max_beds: filters.maxBeds ?? null,
-    location_text: filters.locationText?.trim() || null,
-    center_lat: filters.lat ?? null,
-    center_lng: filters.lng ?? null,
-    radius_miles: filters.radiusMiles ?? null,
+    query_property_type: plan.propertyType ?? null,
+    query_area: plan.area ?? null,
+    query_city: plan.city ?? null,
+    min_price: plan.filters.minPrice ?? null,
+    max_price: plan.filters.maxPrice ?? null,
+    min_beds: plan.filters.minBeds ?? null,
+    max_beds: plan.filters.maxBeds ?? null,
+    location_text: plan.filters.locationText?.trim() || null,
+    center_lat: plan.filters.lat ?? null,
+    center_lng: plan.filters.lng ?? null,
+    radius_miles: plan.filters.radiusMiles ?? null,
     result_limit: RESULT_LIMIT,
     min_match_score: MIN_MATCH_SCORE,
   });
@@ -80,9 +87,10 @@ export async function semanticSearch(
     longitude: row.longitude,
     semanticScore: row.semantic_score,
     matchedChunk: row.matched_chunk ?? undefined,
+    matchedSignals: row.matched_signals ?? undefined,
   }));
 
-  if (results.length === 0) return { results, explanations: [] };
+  if (results.length === 0) return { results, explanations: [], hardConstraints: plan.hardConstraints };
 
   let explanations: { listingId: string; reasons: string[] }[] = [];
   try {
@@ -91,16 +99,16 @@ export async function semanticSearch(
     );
     explanations = explanationSchema.parse(response).explanations;
   } catch {
-    explanations = results.map((listing) => ({
+    explanations = results.slice(0, 8).map((listing) => ({
       listingId: listing.id,
       reasons: [
-        "Semantic match: the listing contains concepts close to your search.",
+        ...(listing.matchedSignals ?? []).map((signal) => `Matched: ${signal}`),
         `Evidence: “${(listing.matchedChunk ?? listing.summary).slice(0, 120)}”`,
-      ],
+      ].slice(0, 4),
     }));
   }
 
-  return { results, explanations };
+  return { results, explanations, hardConstraints: plan.hardConstraints };
 }
 
 export const searchConfig = {

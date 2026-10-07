@@ -21,13 +21,17 @@ const schema = z.object({
 export async function POST(request: Request) {
   try {
     const body = schema.parse(await request.json());
-    const { results, explanations } = await semanticSearch(body.query, body.filters);
+    const { results, explanations, hardConstraints } = await semanticSearch(body.query, body.filters);
 
     return NextResponse.json({
       query: body.query,
       results,
       explanations,
-      meta: { count: results.length, model: searchConfig.llmModel },
+      meta: {
+        count: results.length,
+        model: searchConfig.llmModel,
+        hardConstraints,
+      },
     });
   } catch (error) {
     const message = error instanceof Error ? error.message : "Unexpected search error.";
