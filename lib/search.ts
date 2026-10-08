@@ -23,6 +23,7 @@ const rowSchema = z.object({
   semantic_score: z.number(),
   matched_chunk: z.string().nullable().optional(),
   matched_signals: z.array(z.string()).nullable().optional(),
+  distance_miles: z.number().nullable().optional(),
 });
 
 const explanationSchema = z.object({
@@ -36,6 +37,19 @@ const explanationSchema = z.object({
 
 const RESULT_LIMIT = 20;
 const MIN_MATCH_SCORE = 0.34;
+
+function haversineMiles(lat1: number, lng1: number, lat2: number, lng2: number) {
+  const toRadians = (value: number) => (value * Math.PI) / 180;
+  const earthRadiusMiles = 3958.7613;
+  const dLat = toRadians(lat2 - lat1);
+  const dLng = toRadians(lng2 - lng1);
+  const a =
+    Math.sin(dLat / 2) ** 2 +
+    Math.cos(toRadians(lat1)) *
+      Math.cos(toRadians(lat2)) *
+      Math.sin(dLng / 2) ** 2;
+  return 2 * earthRadiusMiles * Math.asin(Math.sqrt(a));
+}
 
 export async function semanticSearch(
   query: string,
@@ -88,6 +102,11 @@ export async function semanticSearch(
     semanticScore: row.semantic_score,
     matchedChunk: row.matched_chunk ?? undefined,
     matchedSignals: row.matched_signals ?? undefined,
+    distanceMiles:
+      row.distance_miles ??
+      (plan.filters.lat !== undefined && plan.filters.lng !== undefined
+        ? haversineMiles(plan.filters.lat, plan.filters.lng, row.latitude, row.longitude)
+        : undefined),
   }));
 
   if (results.length === 0) return { results, explanations: [], hardConstraints: plan.hardConstraints };

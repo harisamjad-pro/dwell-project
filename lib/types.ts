@@ -26,6 +26,7 @@ export type Listing = {
   semanticScore: number;
   matchedChunk?: string;
   matchedSignals?: string[];
+  distanceMiles?: number;
 };
 
 export type MatchExplanation = {
@@ -37,5 +38,5 @@ export type SearchResponse = {
   query: string;
   results: Listing[];
   explanations: MatchExplanation[];
-  meta: { count: number; model: string; hardConstraints?: string[] };
+  meta: { count: number; model: string };
 };

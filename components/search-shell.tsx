@@ -200,7 +200,7 @@ export function SearchShell() {
                     placeholder="10"
                     className="h-10 w-full rounded-xl border border-[#dedbd2] bg-white px-3 text-sm outline-none focus:border-[#92a697]"
                   />
-                  <div className="mt-1 text-[10px] leading-4 text-[#898d87]">Uses the demo area's center when a known area is selected.</div>
+                  <div className="mt-1 text-[10px] leading-4 text-[#898d87]">Uses the selected area's demo center as the geospatial origin.</div>
                 </div>
                 <div className="flex items-end">
                   <button
@@ -256,7 +256,14 @@ export function SearchShell() {
                 <div>
                   <div className="text-xs font-semibold uppercase tracking-[0.14em] text-[#748076]">Ranked results</div>
                   <h2 className="mt-2 text-2xl font-semibold tracking-[-0.03em]">{results.results.length} homes matched your description</h2>
-                  <p className="mt-1 text-sm text-[#737871]">Searched for “{results.query}”</p>
+                  <div className="mt-1 flex flex-wrap items-center gap-x-3 gap-y-1 text-sm text-[#737871]">
+                    <span>Searched for “{results.query}”</span>
+                    {activeFilters.radiusMiles && activeFilters.lat !== undefined && activeFilters.lng !== undefined && (
+                      <span className="font-medium text-[#526458]">
+                        Within {activeFilters.radiusMiles} mi of {activeFilters.locationText || "the selected center"}
+                      </span>
+                    )}
+                  </div>
                 </div>
                 <div className="hidden rounded-full border border-[#dcd9d1] bg-white/65 px-3 py-1.5 text-xs text-[#6c736c] sm:block">Only strong matches · semantic rank</div>
               </div>

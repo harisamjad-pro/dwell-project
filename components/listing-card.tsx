@@ -1,6 +1,6 @@
 "use client";
 
-import { MapPin, Sparkles } from "lucide-react";
+import { MapPin, Navigation, Sparkles } from "lucide-react";
 import type { Listing } from "@/lib/types";
 
 function money(value: number) {
@@ -30,9 +30,17 @@ export function ListingCard({ listing, reasons }: { listing: Listing; reasons: s
         <div className="flex items-start justify-between gap-5">
           <div>
             <h3 className="text-[20px] font-semibold tracking-[-0.02em]">{listing.title}</h3>
-            <div className="mt-1 flex items-center gap-1.5 text-sm text-[#777a74]">
-              <MapPin size={15} />
-              {listing.area}, {listing.city}
+            <div className="mt-1 flex flex-wrap items-center gap-x-4 gap-y-1.5 text-sm text-[#777a74]">
+              <span className="inline-flex items-center gap-1.5">
+                <MapPin size={15} />
+                {listing.area}, {listing.city}
+              </span>
+              {listing.distanceMiles !== undefined && (
+                <span className="inline-flex items-center gap-1.5 font-medium text-[#4f6756]">
+                  <Navigation size={14} />
+                  {listing.distanceMiles < 0.1 ? "At center" : `${listing.distanceMiles.toFixed(1)} mi away`}
+                </span>
+              )}
             </div>
           </div>
           <div className="rounded-2xl bg-[#edf2eb] px-3 py-2 text-right text-xs font-medium text-[#3d5e48]">
