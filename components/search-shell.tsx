@@ -30,7 +30,10 @@ const areaCenters: Record<string, { lat: number; lng: number }> = {
 export function SearchShell() {
   const [query, setQuery] = useState("");
   const [draftQuery, setDraftQuery] = useState(suggestions[0]);
+  // Manual filters are persistent UI choices. activeFilters also includes
+  // filters introduced by the current conversational refinement chain.
   const [filters, setFilters] = useState<SearchFilters>(defaultFilters);
+  const [activeFilters, setActiveFilters] = useState<SearchFilters>(defaultFilters);
   const [results, setResults] = useState<SearchResponse | null>(null);
   const [busy, setBusy] = useState(false);
   const [refining, setRefining] = useState(false);
@@ -57,6 +60,7 @@ export function SearchShell() {
       if (!response.ok) throw new Error(data.error || "Search failed");
       setResults(data);
       setQuery(nextQuery);
+      setActiveFilters(nextFilters);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Search failed");
     } finally {
@@ -72,13 +76,12 @@ export function SearchShell() {
       const response = await fetch("/api/refine", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ query, followUp: refinement, filters }),
+        body: JSON.stringify({ query, followUp: refinement, filters: activeFilters }),
       });
       const data = await response.json();
       if (!response.ok) throw new Error(data.error || "Refinement failed");
       const patch = data.filterPatch ?? {};
-      const nextFilters = { ...filters, ...patch } as SearchFilters;
-      setFilters(nextFilters);
+      const nextFilters = { ...activeFilters, ...patch } as SearchFilters;
       setDraftQuery(data.query);
       setRefinement("");
       await runSearch(data.query, nextFilters);
@@ -197,7 +200,7 @@ export function SearchShell() {
                     placeholder="10"
                     className="h-10 w-full rounded-xl border border-[#dedbd2] bg-white px-3 text-sm outline-none focus:border-[#92a697]"
                   />
-                  <div className="mt-1 text-[10px] leading-4 text-[#898d87]">Uses the demo area&apos;s center when a known area is selected.</div>
+                  <div className="mt-1 text-[10px] leading-4 text-[#898d87]">Uses the demo area's center when a known area is selected.</div>
                 </div>
                 <div className="flex items-end">
                   <button
@@ -281,7 +284,7 @@ export function SearchShell() {
                   <div className="text-xs font-semibold uppercase tracking-[0.14em] text-[#7a857d]">What makes this different</div>
                   <h2 className="mt-3 text-3xl font-semibold tracking-[-0.04em]">Meaning first. Filters second.</h2>
                   <p className="mt-4 max-w-xl text-sm leading-6 text-[#70766f]">
-                    The listing descriptions are chunked and embedded once during ingestion. Searches only embed the user&apos;s query, then Postgres finds the nearest matching chunks while applying hard filters in the same SQL function.
+                    The listing descriptions are chunked and embedded once during ingestion. Searches only embed the user's query, then Postgres finds the nearest matching chunks while applying hard filters in the same SQL function.
                   </p>
                 </div>
                 <div className="grid gap-3 sm:grid-cols-3 lg:grid-cols-1">

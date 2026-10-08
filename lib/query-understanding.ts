@@ -78,7 +78,7 @@ function extractPrice(query: string, filters: SearchFilters) {
     return next;
   }
 
-  const maxMatch = normalized.match(/(?:under|below|up to|no more than|maximum|max(?:imum)?(?: price)?(?: of)?)\s+([^\s]+)/i);
+  const maxMatch = normalized.match(/(?:under|below|up to|no more than|not more than|maximum|max(?:imum)?(?: price)?(?: of)?)\s+([^\s]+)/i);
   if (maxMatch) {
     const max = parseMoney(maxMatch[1]);
     if (max !== undefined) next.maxPrice = Math.min(next.maxPrice ?? Number.MAX_SAFE_INTEGER, max);
@@ -122,6 +122,25 @@ export type QueryPlan = {
   city?: string;
   hardConstraints: string[];
 };
+
+export function extractExplicitFilterPatch(query: string): SearchFilters {
+  const empty: SearchFilters = {};
+  const withPrice = extractPrice(query, empty);
+  const withBeds = extractBeds(query, withPrice);
+  const patch: SearchFilters = {};
+
+  for (const key of [
+    "minPrice",
+    "maxPrice",
+    "minBeds",
+    "maxBeds",
+  ] as const) {
+    const value = withBeds[key];
+    if (value !== undefined) patch[key] = value;
+  }
+
+  return patch;
+}
 
 export function understandQuery(query: string, filters: SearchFilters): QueryPlan {
   const normalized = normalize(query);
