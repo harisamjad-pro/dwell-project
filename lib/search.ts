@@ -45,11 +45,17 @@ function escapeRegExp(value: string) {
 
 /** Remove an area-only location phrase so radius search can retrieve nearby homes. */
 function queryForRadiusSearch(query: string, area?: string) {
-  if (!area || !new RegExp(`\\b${escapeRegExp(area)}\\b`, "i").test(query)) {
-    return query.trim();
+  // Radius constraints belong in structured SQL filtering, not the embedding text.
+  const withoutRadiusLanguage = query
+    .replace(/\bwithin\s+(?:a\s+)?\d+(?:\.\d+)?\s*[- ]?(?:miles?|mi|kilometers?|kilometres?|km)(?:\s+radius)?(?:\s+(?:of|from|around))?\b/gi, " ")
+    .replace(/\bradius(?:\s+of)?\s+\d+(?:\.\d+)?\s*[- ]?(?:miles?|mi|kilometers?|kilometres?|km)\b/gi, " ")
+    .replace(/\b\d+(?:\.\d+)?\s*[- ]?(?:miles?|mi|kilometers?|kilometres?|km)\s+(?:radius|of|from|around)\b/gi, " ");
+
+  if (!area || !new RegExp(`\\b${escapeRegExp(area)}\\b`, "i").test(withoutRadiusLanguage)) {
+    return withoutRadiusLanguage.replace(/\s+/g, " ").trim() || "homes for sale in Dubai";
   }
 
-  const cleaned = query
+  const cleaned = withoutRadiusLanguage
     .replace(new RegExp(escapeRegExp(area), "ig"), " ")
     .replace(/\b(?:near|in|at|around|within|close\s+to|close|by|from|to|the|a|an|of|for|sale|homes?|properties?|real\s+estate)\b/gi, " ")
     .replace(/[^\p{L}\p{N}]+/gu, " ")

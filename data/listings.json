@@ -24,8 +24,8 @@
     "summary": "A bright five-bedroom home built around indoor-outdoor entertaining and garden space.",
     "description": "This spacious Arabian Ranches residence is designed for family life and easy entertaining. The main living room faces a private garden with mature planting, while oversized windows keep the kitchen and dining area bright from morning through late afternoon. The street is residential rather than commercial, with little through traffic and a strong neighborhood feel. A downstairs room works well as a dedicated office, homework room or guest suite. The garage and front drive can accommodate two vehicles. Schools, community sports facilities and neighborhood parks are within a short drive.",
     "imageUrl": "https://images.unsplash.com/photo-1600607687920-4e2a09cf159d?auto=format&fit=crop&w=1200&q=84",
-    "latitude": 25.0576,
-    "longitude": 55.2708
+    "latitude": 25.0598,
+    "longitude": 55.2677
   },
   {
     "title": "Quiet Creekside Townhouse",
@@ -38,8 +38,8 @@
     "summary": "A peaceful townhouse with lake views, a practical office nook and two-car parking.",
     "description": "Set on a peaceful internal street in The Springs, this three-bedroom townhouse looks towards landscaped greenery and a small community lake. The home gets natural light from two directions and has a bright, practical kitchen connected to the dining area. A compact study nook under the stairs has built-in shelving and works well for focused laptop work. The covered carport handles two cars, and the shaded garden is private enough for weekend lunches outdoors. The surrounding roads are local and low-speed, with parks and everyday shops nearby.",
     "imageUrl": "https://images.unsplash.com/photo-1600566753086-00f18fb6b3ea?auto=format&fit=crop&w=1200&q=84",
-    "latitude": 25.0628,
-    "longitude": 55.2018
+    "latitude": 25.06,
+    "longitude": 55.2055
   },
   {
     "title": "Green Mirdif Family Home",
@@ -66,8 +66,8 @@
     "summary": "Large entertaining spaces, a bright open kitchen and a sheltered courtyard near schools.",
     "description": "Designed around gatherings, this five-bedroom Al Barsha villa has a generous open-plan living and dining area that spills into a sheltered courtyard. The kitchen is bright and social, with a wide island positioned to face the entertaining area rather than a closed utility wall. The house sits on a residential street with limited through traffic and enough frontage for two cars plus visitor parking. A quiet upper-floor room is suited to a dedicated home office with room for two desks. Schools, clinics, groceries and cafés are all within a manageable daily drive.",
     "imageUrl": "https://images.unsplash.com/photo-1600607688969-a5bfcd646154?auto=format&fit=crop&w=1200&q=84",
-    "latitude": 25.1121,
-    "longitude": 55.2015
+    "latitude": 25.1152,
+    "longitude": 55.2039
   },
   {
     "title": "Minimal Jumeirah Garden House",
@@ -80,8 +80,8 @@
     "summary": "A simple, light-filled home with a landscaped garden and excellent entertaining flow.",
     "description": "This understated Jumeirah family house prioritizes natural light, open sightlines and an easy connection to the garden. The main kitchen has tall windows and a broad island, making it a natural gathering point for friends and family. The rear terrace opens onto a landscaped garden with enough room for a dining table and small play area. A separate study has built-in storage and can function as a dedicated home office. The property is on a calm side street rather than a major route, and the driveway comfortably holds two cars. Beaches, schools, cafés and local shops are all within a short radius.",
     "imageUrl": "https://images.unsplash.com/photo-1600210492486-724fe5c67fb0?auto=format&fit=crop&w=1200&q=84",
-    "latitude": 25.2048,
-    "longitude": 55.2708
+    "latitude": 25.2014,
+    "longitude": 55.2687
   },
   {
     "title": "Bright Family Duplex",
@@ -94,8 +94,8 @@
     "summary": "A practical three-bedroom family home with a sunny kitchen and quiet internal road.",
     "description": "This three-bedroom Mudon townhouse sits on an internal road with a noticeably calmer pace than the surrounding arterials. The kitchen and family dining area receive direct daylight for much of the day, while a small garden gives the ground floor a more open feel. A landing alcove upstairs can take a desk and bookshelves for occasional work, although it is less private than a separate office. The driveway handles two cars and the community has parks, play areas and walking paths nearby. The layout suits a young family that wants a low-maintenance home with useful shared spaces.",
     "imageUrl": "https://images.unsplash.com/photo-1600585154526-990dced4db0d?auto=format&fit=crop&w=1200&q=84",
-    "latitude": 25.0147,
-    "longitude": 55.3271
+    "latitude": 25.0165,
+    "longitude": 55.3314
   },
   {
     "title": "Park-Facing Family Villa",
@@ -136,8 +136,8 @@
     "summary": "A private five-bedroom villa with garden rooms, bright interiors and strong family positioning.",
     "description": "A substantial five-bedroom villa in leafy Al Safa, positioned on a quiet side lane with mature planting and a private garden. The interiors use large openings and light finishes to make the kitchen and reception rooms feel airy throughout the day. The main kitchen is designed for entertaining, with a central island and a direct connection to the garden terrace. A separate office is tucked away from the main family circulation, making it suitable for focused work. Parking includes a double garage plus space on the drive. Schools, parks and central Dubai amenities are all within a short drive.",
     "imageUrl": "https://images.unsplash.com/photo-1600607687920-4e2a09cf159d?auto=format&fit=crop&w=1200&q=84",
-    "latitude": 25.1812,
-    "longitude": 55.2361
+    "latitude": 25.1788,
+    "longitude": 55.2321
   },
   {
     "title": "Courtyard Home Near Park",
@@ -164,8 +164,8 @@
     "summary": "A modern five-bedroom home with water views, entertaining space, a bright kitchen, and a calm residential setting.",
     "description": "A modern five-bedroom home with water views, entertaining space, a bright kitchen, and a calm residential setting. The setting is intended to feel like a realistic family-home brief: water views, entertaining, bright kitchen, quiet, two-car garage. The street, rooms and amenities are described as synthetic examples for Dwell's demo dataset, so these details are suitable for testing semantic ranking and explainability rather than live-property decisions.",
     "imageUrl": "https://images.unsplash.com/photo-1600607687920-4e2a09cf159d?auto=format&fit=crop&w=1200&q=84",
-    "latitude": 25.055,
-    "longitude": 55.152
+    "latitude": 25.059,
+    "longitude": 55.1503
   },
   {
     "title": "Metro-Friendly City Apartment",
@@ -178,8 +178,8 @@
     "summary": "A bright two-bedroom apartment close to the metro, with a practical work corner and a living room suited to hosting friends.",
     "description": "A bright two-bedroom apartment close to the metro, with a practical work corner and a living room suited to hosting friends. The setting is intended to feel like a realistic family-home brief: metro, bright, home office nook, entertaining, city commute. The street, rooms and amenities are described as synthetic examples for Dwell's demo dataset, so these details are suitable for testing semantic ranking and explainability rather than live-property decisions.",
     "imageUrl": "https://images.unsplash.com/photo-1600566753086-00f18fb6b3ea?auto=format&fit=crop&w=1200&q=84",
-    "latitude": 25.187,
-    "longitude": 55.269
+    "latitude": 25.1855,
+    "longitude": 55.2718
   },
   {
     "title": "Beachside Family Villa",
@@ -192,8 +192,8 @@
     "summary": "A private family villa near the beach with a garden, airy kitchen, and calm side street suited to relaxed evenings.",
     "description": "A private family villa near the beach with a garden, airy kitchen, and calm side street suited to relaxed evenings. The setting is intended to feel like a realistic family-home brief: beach, family, garden, bright kitchen, quiet side street. The street, rooms and amenities are described as synthetic examples for Dwell's demo dataset, so these details are suitable for testing semantic ranking and explainability rather than live-property decisions.",
     "imageUrl": "https://images.unsplash.com/photo-1600047509807-ba8f99d2cdde?auto=format&fit=crop&w=1200&q=84",
-    "latitude": 25.145,
-    "longitude": 55.202
+    "latitude": 25.1479,
+    "longitude": 55.2061
   },
   {
     "title": "Garden Townhouse by Greenway",
@@ -248,8 +248,8 @@
     "summary": "A practical four-bedroom villa on an internal road, with a sunny kitchen, separate study, and parking for two cars.",
     "description": "A practical four-bedroom villa on an internal road, with a sunny kitchen, separate study, and parking for two cars. The setting is intended to feel like a realistic family-home brief: internal road, sunny kitchen, office, two cars, family. The street, rooms and amenities are described as synthetic examples for Dwell's demo dataset, so these details are suitable for testing semantic ranking and explainability rather than live-property decisions.",
     "imageUrl": "https://images.unsplash.com/photo-1600566753190-17f0baa2a6c3?auto=format&fit=crop&w=1200&q=84",
-    "latitude": 25.026,
-    "longitude": 55.149
+    "latitude": 25.0218,
+    "longitude": 55.1506
   },
   {
     "title": "Poolside JVC Villa",
@@ -276,8 +276,8 @@
     "summary": "A green-facing home with generous windows, a dedicated office, community parks, and a relaxed residential atmosphere.",
     "description": "A green-facing home with generous windows, a dedicated office, community parks, and a relaxed residential atmosphere. The setting is intended to feel like a realistic family-home brief: greenery, large windows, dedicated office, parks, quiet. The street, rooms and amenities are described as synthetic examples for Dwell's demo dataset, so these details are suitable for testing semantic ranking and explainability rather than live-property decisions.",
     "imageUrl": "https://images.unsplash.com/photo-1600607687920-4e2a09cf159d?auto=format&fit=crop&w=1200&q=84",
-    "latitude": 25.034,
-    "longitude": 55.244
+    "latitude": 25.0356,
+    "longitude": 55.2395
   },
   {
     "title": "Downtown Entertainer Loft",
@@ -290,8 +290,8 @@
     "summary": "A large two-bedroom apartment with dramatic daylight, an open kitchen, and a flexible second room for working from home.",
     "description": "A large two-bedroom apartment with dramatic daylight, an open kitchen, and a flexible second room for working from home. The setting is intended to feel like a realistic family-home brief: entertaining, natural light, open kitchen, home office, central. The street, rooms and amenities are described as synthetic examples for Dwell's demo dataset, so these details are suitable for testing semantic ranking and explainability rather than live-property decisions.",
     "imageUrl": "https://images.unsplash.com/photo-1600566753086-00f18fb6b3ea?auto=format&fit=crop&w=1200&q=84",
-    "latitude": 25.197,
-    "longitude": 55.274
+    "latitude": 25.1932,
+    "longitude": 55.2762
   },
   {
     "title": "Quiet Al Barsha Family Villa",
@@ -304,8 +304,8 @@
     "summary": "A generous family villa on a low-traffic residential street, with a bright kitchen, shaded garden, and separate office.",
     "description": "A generous family villa on a low-traffic residential street, with a bright kitchen, shaded garden, and separate office. The setting is intended to feel like a realistic family-home brief: low traffic, family, bright kitchen, garden, office. The street, rooms and amenities are described as synthetic examples for Dwell's demo dataset, so these details are suitable for testing semantic ranking and explainability rather than live-property decisions.",
     "imageUrl": "https://images.unsplash.com/photo-1600047509807-ba8f99d2cdde?auto=format&fit=crop&w=1200&q=84",
-    "latitude": 25.104,
-    "longitude": 55.214
+    "latitude": 25.1077,
+    "longitude": 55.2104
   },
   {
     "title": "JVT Study-Focused Townhouse",
@@ -346,8 +346,8 @@
     "summary": "A light-filled house with a central courtyard, generous kitchen island, quiet lane, and easy access to schools, cafés and the beach.",
     "description": "A light-filled house with a central courtyard, generous kitchen island, quiet lane, and easy access to schools, cafés and the beach. The setting is intended to feel like a realistic family-home brief: courtyard, bright, large kitchen island, schools, beach. The street, rooms and amenities are described as synthetic examples for Dwell's demo dataset, so these details are suitable for testing semantic ranking and explainability rather than live-property decisions.",
     "imageUrl": "https://images.unsplash.com/photo-1600585154526-990dced4db0d?auto=format&fit=crop&w=1200&q=84",
-    "latitude": 25.198,
-    "longitude": 55.248
+    "latitude": 25.1961,
+    "longitude": 55.2438
   },
   {
     "title": "Mirdif Budget Family Townhouse",
@@ -374,8 +374,8 @@
     "summary": "A large family villa with mature landscaping, pool-ready outdoor space, a bright kitchen, and a separate work room.",
     "description": "A large family villa with mature landscaping, pool-ready outdoor space, a bright kitchen, and a separate work room. The setting is intended to feel like a realistic family-home brief: large garden, pool-ready, bright kitchen, office, family. The street, rooms and amenities are described as synthetic examples for Dwell's demo dataset, so these details are suitable for testing semantic ranking and explainability rather than live-property decisions.",
     "imageUrl": "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&w=1200&q=84",
-    "latitude": 25.174,
-    "longitude": 55.391
+    "latitude": 25.1785,
+    "longitude": 55.3923
   },
   {
     "title": "City Walk Design Apartment",
@@ -388,8 +388,8 @@
     "summary": "A design-led two-bedroom apartment with tall glazing, a flexible study alcove, and direct access to cafés and walkable streets.",
     "description": "A design-led two-bedroom apartment with tall glazing, a flexible study alcove, and direct access to cafés and walkable streets. The setting is intended to feel like a realistic family-home brief: design, tall glazing, study, walkable, cafés. The street, rooms and amenities are described as synthetic examples for Dwell's demo dataset, so these details are suitable for testing semantic ranking and explainability rather than live-property decisions.",
     "imageUrl": "https://images.unsplash.com/photo-1600607687920-4e2a09cf159d?auto=format&fit=crop&w=1200&q=84",
-    "latitude": 25.205,
-    "longitude": 55.263
+    "latitude": 25.2025,
+    "longitude": 55.2662
   },
   {
     "title": "The Lakes Family Villa",
@@ -402,8 +402,8 @@
     "summary": "A peaceful four-bedroom villa near landscaped walking paths, with a separate office, garden terrace and good family circulation.",
     "description": "A peaceful four-bedroom villa near landscaped walking paths, with a separate office, garden terrace and good family circulation. The setting is intended to feel like a realistic family-home brief: peaceful, walking paths, office, garden terrace, family. The street, rooms and amenities are described as synthetic examples for Dwell's demo dataset, so these details are suitable for testing semantic ranking and explainability rather than live-property decisions.",
     "imageUrl": "https://images.unsplash.com/photo-1600566753086-00f18fb6b3ea?auto=format&fit=crop&w=1200&q=84",
-    "latitude": 25.071,
-    "longitude": 55.164
+    "latitude": 25.073,
+    "longitude": 55.169
   },
   {
     "title": "Emirates Living Entertainer Home",
@@ -416,8 +416,8 @@
     "summary": "A five-bedroom family home with large entertaining areas, a dedicated office, private garden and two-car garage.",
     "description": "A five-bedroom family home with large entertaining areas, a dedicated office, private garden and two-car garage. The setting is intended to feel like a realistic family-home brief: entertaining, dedicated office, garden, two-car garage, family. The street, rooms and amenities are described as synthetic examples for Dwell's demo dataset, so these details are suitable for testing semantic ranking and explainability rather than live-property decisions.",
     "imageUrl": "https://images.unsplash.com/photo-1600047509807-ba8f99d2cdde?auto=format&fit=crop&w=1200&q=84",
-    "latitude": 25.073,
-    "longitude": 55.157
+    "latitude": 25.0689,
+    "longitude": 55.1555
   },
   {
     "title": "Barsha South Work-From-Home Villa",
@@ -430,8 +430,8 @@
     "summary": "A practical villa for remote workers, with two possible office rooms, a bright kitchen and a shaded backyard.",
     "description": "A practical villa for remote workers, with two possible office rooms, a bright kitchen and a shaded backyard. The setting is intended to feel like a realistic family-home brief: remote work, two office rooms, bright kitchen, backyard, quiet. The street, rooms and amenities are described as synthetic examples for Dwell's demo dataset, so these details are suitable for testing semantic ranking and explainability rather than live-property decisions.",
     "imageUrl": "https://images.unsplash.com/photo-1600607688969-a5bfcd646154?auto=format&fit=crop&w=1200&q=84",
-    "latitude": 25.083,
-    "longitude": 55.207
+    "latitude": 25.0862,
+    "longitude": 55.2088
   },
   {
     "title": "Jumeirah Beach Bungalow",
@@ -444,8 +444,8 @@
     "summary": "A relaxed four-bedroom bungalow with generous outdoor space, airy rooms, and fast access to the beach and local cafés.",
     "description": "A relaxed four-bedroom bungalow with generous outdoor space, airy rooms, and fast access to the beach and local cafés. The setting is intended to feel like a realistic family-home brief: beach, outdoor space, airy, cafés, bungalow. The street, rooms and amenities are described as synthetic examples for Dwell's demo dataset, so these details are suitable for testing semantic ranking and explainability rather than live-property decisions.",
     "imageUrl": "https://images.unsplash.com/photo-1600210492486-724fe5c67fb0?auto=format&fit=crop&w=1200&q=84",
-    "latitude": 25.194,
-    "longitude": 55.227
+    "latitude": 25.1918,
+    "longitude": 55.2232
   },
   {
     "title": "Dubai Hills Family Townhouse",
@@ -486,8 +486,8 @@
     "summary": "A spacious home with a garden, home office, open kitchen and generous driveway, set away from busy through roads.",
     "description": "A spacious home with a garden, home office, open kitchen and generous driveway, set away from busy through roads. The setting is intended to feel like a realistic family-home brief: garden, home office, open kitchen, driveway, quiet. The street, rooms and amenities are described as synthetic examples for Dwell's demo dataset, so these details are suitable for testing semantic ranking and explainability rather than live-property decisions.",
     "imageUrl": "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&w=1200&q=84",
-    "latitude": 25.047,
-    "longitude": 55.275
+    "latitude": 25.0512,
+    "longitude": 55.2726
   },
   {
     "title": "Marina Commuter Apartment",
@@ -500,8 +500,8 @@
     "summary": "A two-bedroom apartment with marina views, a flexible work room and quick access to the tram and cafés.",
     "description": "A two-bedroom apartment with marina views, a flexible work room and quick access to the tram and cafés. The setting is intended to feel like a realistic family-home brief: marina, tram, work room, cafés, views. The street, rooms and amenities are described as synthetic examples for Dwell's demo dataset, so these details are suitable for testing semantic ranking and explainability rather than live-property decisions.",
     "imageUrl": "https://images.unsplash.com/photo-1600607687920-4e2a09cf159d?auto=format&fit=crop&w=1200&q=84",
-    "latitude": 25.08,
-    "longitude": 55.142
+    "latitude": 25.0765,
+    "longitude": 55.146
   },
   {
     "title": "Kite Beach Family House",
@@ -514,8 +514,8 @@
     "summary": "A family-sized house close to Kite Beach with an airy kitchen, shaded garden and two-car parking on a side street.",
     "description": "A family-sized house close to Kite Beach with an airy kitchen, shaded garden and two-car parking on a side street. The setting is intended to feel like a realistic family-home brief: beach, airy kitchen, garden, two cars, side street. The street, rooms and amenities are described as synthetic examples for Dwell's demo dataset, so these details are suitable for testing semantic ranking and explainability rather than live-property decisions.",
     "imageUrl": "https://images.unsplash.com/photo-1600566753086-00f18fb6b3ea?auto=format&fit=crop&w=1200&q=84",
-    "latitude": 25.151,
-    "longitude": 55.202
+    "latitude": 25.1523,
+    "longitude": 55.1993
   },
   {
     "title": "Discovery Gardens Courtyard Townhouse",
@@ -528,8 +528,8 @@
     "summary": "A practical townhouse with courtyard light, a small office, garden area and easy access to metro-connected routes.",
     "description": "A practical townhouse with courtyard light, a small office, garden area and easy access to metro-connected routes. The setting is intended to feel like a realistic family-home brief: courtyard, office, garden, metro, practical. The street, rooms and amenities are described as synthetic examples for Dwell's demo dataset, so these details are suitable for testing semantic ranking and explainability rather than live-property decisions.",
     "imageUrl": "https://images.unsplash.com/photo-1600047509807-ba8f99d2cdde?auto=format&fit=crop&w=1200&q=84",
-    "latitude": 25.037,
-    "longitude": 55.145
+    "latitude": 25.0325,
+    "longitude": 55.1481
   },
   {
     "title": "Silicon Oasis Quiet Villa",
@@ -542,8 +542,8 @@
     "summary": "A family villa on a calmer internal street with a study room, bright kitchen and shaded outdoor area.",
     "description": "A family villa on a calmer internal street with a study room, bright kitchen and shaded outdoor area. The setting is intended to feel like a realistic family-home brief: quiet street, study, bright kitchen, outdoor area, family. The street, rooms and amenities are described as synthetic examples for Dwell's demo dataset, so these details are suitable for testing semantic ranking and explainability rather than live-property decisions.",
     "imageUrl": "https://images.unsplash.com/photo-1600607688969-a5bfcd646154?auto=format&fit=crop&w=1200&q=84",
-    "latitude": 25.123,
-    "longitude": 55.381
+    "latitude": 25.1257,
+    "longitude": 55.3767
   },
   {
     "title": "Greens Balcony Apartment",
@@ -556,8 +556,8 @@
     "summary": "A light two-bedroom apartment with a generous balcony, dedicated desk nook and quick access to green walking paths.",
     "description": "A light two-bedroom apartment with a generous balcony, dedicated desk nook and quick access to green walking paths. The setting is intended to feel like a realistic family-home brief: balcony, desk nook, green paths, light, apartment. The street, rooms and amenities are described as synthetic examples for Dwell's demo dataset, so these details are suitable for testing semantic ranking and explainability rather than live-property decisions.",
     "imageUrl": "https://images.unsplash.com/photo-1600210492486-724fe5c67fb0?auto=format&fit=crop&w=1200&q=84",
-    "latitude": 25.091,
-    "longitude": 55.177
+    "latitude": 25.0894,
+    "longitude": 55.1817
   },
   {
     "title": "Palm Jumeirah Sunset Apartment",
@@ -584,8 +584,8 @@
     "summary": "A loft-style home with oversized windows, flexible studio space and a strong indoor entertaining setup near galleries and cafés.",
     "description": "A loft-style home with oversized windows, flexible studio space and a strong indoor entertaining setup near galleries and cafés. The setting is intended to feel like a realistic family-home brief: oversized windows, studio, entertaining, galleries, cafés. The street, rooms and amenities are described as synthetic examples for Dwell's demo dataset, so these details are suitable for testing semantic ranking and explainability rather than live-property decisions.",
     "imageUrl": "https://images.unsplash.com/photo-1600566753190-17f0baa2a6c3?auto=format&fit=crop&w=1200&q=84",
-    "latitude": 25.139,
-    "longitude": 55.222
+    "latitude": 25.1425,
+    "longitude": 55.2246
   },
   {
     "title": "Nad Al Hamar Family House",
@@ -598,8 +598,8 @@
     "summary": "A quieter family house with mature trees, a separate study, covered two-car parking and a bright breakfast room.",
     "description": "A quieter family house with mature trees, a separate study, covered two-car parking and a bright breakfast room. The setting is intended to feel like a realistic family-home brief: mature trees, study, two cars, bright breakfast room, family. The street, rooms and amenities are described as synthetic examples for Dwell's demo dataset, so these details are suitable for testing semantic ranking and explainability rather than live-property decisions.",
     "imageUrl": "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&w=1200&q=84",
-    "latitude": 25.229,
-    "longitude": 55.395
+    "latitude": 25.2251,
+    "longitude": 55.3921
   },
   {
     "title": "Town Square Garden Townhome",
@@ -654,8 +654,8 @@
     "summary": "A compact apartment for a professional couple, with strong daylight, a small desk nook and easy access to city routes.",
     "description": "A compact apartment for a professional couple, with strong daylight, a small desk nook and easy access to city routes. The setting is intended to feel like a realistic family-home brief: daylight, desk nook, commute, compact, city. The street, rooms and amenities are described as synthetic examples for Dwell's demo dataset, so these details are suitable for testing semantic ranking and explainability rather than live-property decisions.",
     "imageUrl": "https://images.unsplash.com/photo-1600607688969-a5bfcd646154?auto=format&fit=crop&w=1200&q=84",
-    "latitude": 25.099,
-    "longitude": 55.173
+    "latitude": 25.1005,
+    "longitude": 55.1764
   },
   {
     "title": "Dubai Hills Pool Villa",
@@ -682,8 +682,8 @@
     "summary": "A private bungalow on a leafy side lane, with a bright kitchen, garden terrace and separate study.",
     "description": "A private bungalow on a leafy side lane, with a bright kitchen, garden terrace and separate study. The setting is intended to feel like a realistic family-home brief: leafy lane, bright kitchen, garden terrace, study, private. The street, rooms and amenities are described as synthetic examples for Dwell's demo dataset, so these details are suitable for testing semantic ranking and explainability rather than live-property decisions.",
     "imageUrl": "https://images.unsplash.com/photo-1600585154526-990dced4db0d?auto=format&fit=crop&w=1200&q=84",
-    "latitude": 25.177,
-    "longitude": 55.224
+    "latitude": 25.1741,
+    "longitude": 55.2251
   },
   {
     "title": "JVC Balcony Townhouse",
@@ -710,7 +710,7 @@
     "summary": "A sea-view two-bedroom apartment with floor-to-ceiling glazing, a large balcony and generous entertaining room.",
     "description": "A sea-view two-bedroom apartment with floor-to-ceiling glazing, a large balcony and generous entertaining room. The setting is intended to feel like a realistic family-home brief: sea view, glazing, balcony, entertaining, apartment. The street, rooms and amenities are described as synthetic examples for Dwell's demo dataset, so these details are suitable for testing semantic ranking and explainability rather than live-property decisions.",
     "imageUrl": "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&w=1200&q=84",
-    "latitude": 25.103,
-    "longitude": 55.145
+    "latitude": 25.1074,
+    "longitude": 55.141
   }
 ]

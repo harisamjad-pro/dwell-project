@@ -47,49 +47,6 @@ const AREAS = [
   "Al Wasl",
 ];
 
-const AREA_CENTERS: Record<string, { lat: number; lng: number }> = {
-  "Al Barsha": { lat: 25.1121, lng: 55.2015 },
-  "Al Barsha 2": { lat: 25.104, lng: 55.214 },
-  "Al Barsha South": { lat: 25.083, lng: 55.207 },
-  "Al Furjan": { lat: 25.026, lng: 55.149 },
-  "Al Quoz": { lat: 25.139, lng: 55.222 },
-  "Al Safa": { lat: 25.1812, lng: 55.2361 },
-  "Al Safa 2": { lat: 25.177, lng: 55.224 },
-  "Al Wasl": { lat: 25.198, lng: 55.248 },
-  "Arabian Ranches": { lat: 25.0576, lng: 55.2708 },
-  "Arabian Ranches 2": { lat: 25.047, lng: 55.275 },
-  "Barsha Heights": { lat: 25.099, lng: 55.173 },
-  "Business Bay": { lat: 25.187, lng: 55.269 },
-  "City Walk": { lat: 25.205, lng: 55.263 },
-  "Damac Hills": { lat: 25.034, lng: 55.244 },
-  "Discovery Gardens": { lat: 25.037, lng: 55.145 },
-  "Downtown Dubai": { lat: 25.197, lng: 55.274 },
-  "Dubai Creek Harbour": { lat: 25.20765, lng: 55.34375 },
-  "Dubai Harbour": { lat: 25.103, lng: 55.145 },
-  "Dubai Hills Estate": { lat: 25.055, lng: 55.243333 },
-  "Dubai Marina": { lat: 25.08, lng: 55.142 },
-  "Dubai Silicon Oasis": { lat: 25.123, lng: 55.381 },
-  "Emirates Living": { lat: 25.073, lng: 55.157 },
-  "Jumeirah": { lat: 25.2048, lng: 55.2708 },
-  "Jumeirah Beach Road": { lat: 25.194, lng: 55.227 },
-  "Jumeirah Islands": { lat: 25.055, lng: 55.152 },
-  "Jumeirah Park": { lat: 25.0412, lng: 55.1538 },
-  "Jumeirah Village Circle": { lat: 25.045, lng: 55.209 },
-  "Jumeirah Village Triangle": { lat: 25.0275, lng: 55.1815 },
-  "Mirdif": { lat: 25.23245, lng: 55.4131 },
-  "Mudon": { lat: 25.0147, lng: 55.3271 },
-  "Nad Al Hamar": { lat: 25.229, lng: 55.395 },
-  "Nad Al Sheba": { lat: 25.174, lng: 55.391 },
-  "Palm Jumeirah": { lat: 25.11, lng: 55.138 },
-  "The Greens": { lat: 25.091, lng: 55.177 },
-  "The Lakes": { lat: 25.071, lng: 55.164 },
-  "The Meadows": { lat: 25.0705, lng: 55.17 },
-  "The Springs": { lat: 25.0628, lng: 55.2018 },
-  "Town Square": { lat: 25.0052, lng: 55.29805 },
-  "Umm Suqeim": { lat: 25.145, lng: 55.202 },
-  "Umm Suqeim 3": { lat: 25.151, lng: 55.202 },
-};
-
 function normalize(value: string) {
   return value.toLowerCase().replace(/[–—]/g, "-").replace(/\s+/g, " ").trim();
 }
@@ -106,6 +63,40 @@ function parseMoney(value: string) {
   if (suffix === "m" || suffix === "million") return Math.round(number * 1_000_000);
   if (suffix === "k" || suffix === "thousand") return Math.round(number * 1_000);
   return Math.round(number);
+}
+
+
+const RADIUS_UNITS = "miles?|mi|kilometers?|kilometres?|km";
+
+function parseRadiusMiles(amountText: string, unitText: string): number | undefined {
+  const amount = Number(amountText);
+  if (!Number.isFinite(amount) || amount <= 0) return undefined;
+
+  const unit = unitText.toLowerCase();
+  const miles = /^(?:km|kilomet)/i.test(unit) ? amount / 1.609344 : amount;
+  // The search endpoint currently caps supported radius searches at 100 miles.
+  return Math.min(100, Math.round(miles * 100) / 100);
+}
+
+/** Recognize radius constraints stated naturally instead of only in the Filters UI. */
+function extractRadius(query: string, filters: SearchFilters) {
+  const normalized = normalize(query);
+  const next = { ...filters };
+  const patterns = [
+    new RegExp(`\\bwithin\\s+(?:a\\s+)?(\\d+(?:\\.\\d+)?)\\s*[- ]?(${RADIUS_UNITS})\\b`, "i"),
+    new RegExp(`\\bradius(?:\\s+of)?\\s+(\\d+(?:\\.\\d+)?)\\s*[- ]?(${RADIUS_UNITS})\\b`, "i"),
+    new RegExp(`\\b(\\d+(?:\\.\\d+)?)\\s*[- ]?(${RADIUS_UNITS})\\s+(?:radius|of|from|around)\\b`, "i"),
+  ];
+
+  for (const pattern of patterns) {
+    const match = normalized.match(pattern);
+    if (!match) continue;
+    const radiusMiles = parseRadiusMiles(match[1], match[2]);
+    if (radiusMiles !== undefined && radiusMiles > 0) next.radiusMiles = radiusMiles;
+    break;
+  }
+
+  return next;
 }
 
 function extractPrice(query: string, filters: SearchFilters) {
@@ -170,6 +161,7 @@ export function extractExplicitFilterPatch(query: string): SearchFilters {
   const empty: SearchFilters = {};
   const withPrice = extractPrice(query, empty);
   const withBeds = extractBeds(query, withPrice);
+  const withRadius = extractRadius(query, withBeds);
   const patch: SearchFilters = {};
 
   for (const key of [
@@ -177,8 +169,9 @@ export function extractExplicitFilterPatch(query: string): SearchFilters {
     "maxPrice",
     "minBeds",
     "maxBeds",
+    "radiusMiles",
   ] as const) {
-    const value = withBeds[key];
+    const value = withRadius[key];
     if (value !== undefined) patch[key] = value;
   }
 
@@ -187,8 +180,16 @@ export function extractExplicitFilterPatch(query: string): SearchFilters {
 
 export function understandQuery(query: string, filters: SearchFilters): QueryPlan {
   const normalized = normalize(query);
-  const nextFilters = extractBeds(normalized, extractPrice(normalized, filters));
+  const nextFilters = extractRadius(
+    normalized,
+    extractBeds(normalized, extractPrice(normalized, filters)),
+  );
   const hardConstraints: string[] = [];
+
+  const hasRadiusInQuery = nextFilters.radiusMiles !== filters.radiusMiles && /\b(?:within|radius|miles?|mi|kilometers?|kilometres?|km)\b/i.test(normalized);
+  if (hasRadiusInQuery && nextFilters.radiusMiles !== undefined) {
+    hardConstraints.push(`radius <= ${nextFilters.radiusMiles} miles`);
+  }
 
   const propertyType = PROPERTY_TYPES.find((value) => {
     const pattern = new RegExp(`\\b${value.toLowerCase()}(?:s)?\\b`, "i");
@@ -196,36 +197,17 @@ export function understandQuery(query: string, filters: SearchFilters): QueryPla
   });
   if (propertyType) hardConstraints.push(`property type = ${propertyType}`);
 
-  const detectedArea = AREAS
+  const area = AREAS
     .slice()
     .sort((a, b) => b.length - a.length)
     .find((value) => normalized.includes(normalize(value)));
-
-  const filterArea = nextFilters.locationText
-    ? AREAS
-        .slice()
-        .sort((a, b) => b.length - a.length)
-        .find((value) => normalize(nextFilters.locationText as string) === normalize(value))
-    : undefined;
-
-  const area = detectedArea ?? filterArea;
-  if (area) {
-    hardConstraints.push(`area = ${area}`);
-
-    const center = AREA_CENTERS[area];
-    if (center && (nextFilters.lat === undefined || nextFilters.lng === undefined)) {
-      nextFilters.lat = center.lat;
-      nextFilters.lng = center.lng;
-    }
-
-    if (!nextFilters.locationText) {
-      nextFilters.locationText = area;
-    }
-  }
+  if (area) hardConstraints.push(`area = ${area}`);
 
   const city = normalized.includes("dubai") ? "Dubai" : undefined;
   if (city) hardConstraints.push("city = Dubai");
 
+  // The original query remains the semantic signal. Explicit structured facts
+  // are additionally passed to SQL so they cannot be washed out by embeddings.
   return {
     originalQuery: query,
     semanticQuery: query.trim(),
