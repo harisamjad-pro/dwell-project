@@ -107,6 +107,9 @@ export async function semanticSearch(
       (plan.filters.lat !== undefined && plan.filters.lng !== undefined
         ? haversineMiles(plan.filters.lat, plan.filters.lng, row.latitude, row.longitude)
         : undefined),
+    distanceOrigin:
+      plan.area ?? plan.filters.locationText?.trim() ?? undefined,
+    radiusMiles: plan.filters.radiusMiles,
   }));
 
   if (results.length === 0) return { results, explanations: [], hardConstraints: plan.hardConstraints };

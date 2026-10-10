@@ -27,6 +27,8 @@ export type Listing = {
   matchedChunk?: string;
   matchedSignals?: string[];
   distanceMiles?: number;
+  distanceOrigin?: string;
+  radiusMiles?: number;
 };
 
 export type MatchExplanation = {

@@ -7,6 +7,14 @@ function money(value: number) {
   return new Intl.NumberFormat("en-AE", { maximumFractionDigits: 0 }).format(value);
 }
 
+function distanceLabel(distance: number) {
+  if (distance < 0.1) return "Very close · under 0.1 mi";
+  if (distance < 1) return `${distance.toFixed(1)} mi · very nearby`;
+  if (distance < 3) return `${distance.toFixed(1)} mi · nearby`;
+  if (distance < 5) return `${distance.toFixed(1)} mi · a little farther`;
+  return `${distance.toFixed(1)} mi · farther away`;
+}
+
 export function ListingCard({ listing, reasons }: { listing: Listing; reasons: string[] }) {
   return (
     <article className="dwell-card group overflow-hidden rounded-[28px] bg-white/75">
@@ -35,10 +43,13 @@ export function ListingCard({ listing, reasons }: { listing: Listing; reasons: s
                 <MapPin size={15} />
                 {listing.area}, {listing.city}
               </span>
-              {listing.distanceMiles !== undefined && (
-                <span className="inline-flex items-center gap-1.5 font-medium text-[#4f6756]">
+              {listing.distanceMiles !== undefined && Number.isFinite(listing.distanceMiles) && (
+                <span
+                  className="inline-flex items-center gap-1.5 font-medium text-[#4f6756]"
+                  title={`Approximate straight-line distance${listing.distanceOrigin ? ` from ${listing.distanceOrigin}` : " from the search reference point"}; not driving distance.`}
+                >
                   <Navigation size={14} />
-                  {listing.distanceMiles < 0.1 ? "At center" : `${listing.distanceMiles.toFixed(1)} mi away`}
+                  {distanceLabel(listing.distanceMiles)}
                 </span>
               )}
             </div>
@@ -48,6 +59,15 @@ export function ListingCard({ listing, reasons }: { listing: Listing; reasons: s
             <div>{listing.bathrooms} baths</div>
           </div>
         </div>
+
+        {listing.distanceMiles !== undefined && Number.isFinite(listing.distanceMiles) && (
+          <div className="mt-3 rounded-xl bg-[#f5f6f1] px-3 py-2 text-xs leading-5 text-[#6b7169]">
+            <div>
+              Approximate straight-line distance{listing.distanceOrigin ? ` from ${listing.distanceOrigin}` : " from your search point"}.
+              {listing.radiusMiles !== undefined ? ` This result is within your ${listing.radiusMiles}-mile radius.` : " No radius limit is active; distance is shown for context."}
+            </div>
+          </div>
+        )}
 
         <p className="mt-4 text-[14px] leading-6 text-[#5f665f]">{listing.summary}</p>
 
