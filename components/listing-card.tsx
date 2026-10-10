@@ -64,7 +64,11 @@ export function ListingCard({ listing, reasons }: { listing: Listing; reasons: s
           <div className="mt-3 rounded-xl bg-[#f5f6f1] px-3 py-2 text-xs leading-5 text-[#6b7169]">
             <div>
               Approximate straight-line distance{listing.distanceOrigin ? ` from ${listing.distanceOrigin}` : " from your search point"}.
-              {listing.radiusMiles !== undefined ? ` This result is within your ${listing.radiusMiles}-mile radius.` : " No radius limit is active; distance is shown for context."}
+              {listing.radiusMiles !== undefined && listing.minRadiusMiles !== undefined
+                ? ` This result is between ${listing.minRadiusMiles} and ${listing.radiusMiles} miles from the reference point.`
+                : listing.radiusMiles !== undefined
+                  ? ` This result is within your ${listing.radiusMiles}-mile radius.`
+                  : " No radius limit is active; distance is shown for context."}
             </div>
           </div>
         )}

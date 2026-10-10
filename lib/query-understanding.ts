@@ -51,6 +51,10 @@ function normalize(value: string) {
   return value.toLowerCase().replace(/[–—]/g, "-").replace(/\s+/g, " ").trim();
 }
 
+const NUMBER_PATTERN = String.raw`(?:\d{1,3}(?:,\d{3})+|\d+)(?:\.\d+)?`;
+const MONEY_SCALE_PATTERN = String.raw`(?:million|thousand|m(?!iles?\b)|k)`;
+const MONEY_RANGE_SOURCE = String.raw`\b(?:between|from|in|budget(?:\s+of)?|priced\s+between)?\s*(aed\s*)?(${NUMBER_PATTERN})\s*(${MONEY_SCALE_PATTERN})?\s*(?:-|to|and)\s*(?:aed\s*)?(${NUMBER_PATTERN})\s*(${MONEY_SCALE_PATTERN})?\s*(aed|dirhams?)?\b`;
+
 function parseMoney(value: string) {
   const normalized = value.toLowerCase().replace(/,/g, "").replace(/\$/g, "").trim();
   const match = normalized.match(/(\d+(?:\.\d+)?)\s*(m|million|k|thousand)?/i);
@@ -65,6 +69,9 @@ function parseMoney(value: string) {
   return Math.round(number);
 }
 
+function parseMoneyWithScale(amount: string, scale?: string) {
+  return parseMoney(`${amount}${scale ?? ""}`);
+}
 
 const RADIUS_UNITS = "miles?|mi|kilometers?|kilometres?|km";
 
@@ -78,21 +85,43 @@ function parseRadiusMiles(amountText: string, unitText: string): number | undefi
   return Math.min(100, Math.round(miles * 100) / 100);
 }
 
-/** Recognize radius constraints stated naturally instead of only in the Filters UI. */
+/** Recognize either a single maximum radius or a distance band in natural language. */
 function extractRadius(query: string, filters: SearchFilters) {
   const normalized = normalize(query);
   const next = { ...filters };
-  const patterns = [
+  const rangePatterns = [
+    new RegExp(`\\bwithin\\s+(?:a\\s+)?(\\d+(?:\\.\\d+)?)\\s*(?:-|to)\\s*(\\d+(?:\\.\\d+)?)\\s*[- ]?(${RADIUS_UNITS})\\b`, "i"),
+    new RegExp(`\\b(?:between|from)\\s+(\\d+(?:\\.\\d+)?)\\s*(?:-|to|and)\\s*(\\d+(?:\\.\\d+)?)\\s*[- ]?(${RADIUS_UNITS})\\b`, "i"),
+  ];
+
+  for (const pattern of rangePatterns) {
+    const match = normalized.match(pattern);
+    if (!match) continue;
+
+    const first = parseRadiusMiles(match[1], match[3]);
+    const second = parseRadiusMiles(match[2], match[3]);
+    if (first !== undefined && second !== undefined) {
+      const lower = Math.min(first, second);
+      const upper = Math.max(first, second);
+      next.minRadiusMiles = Math.max(next.minRadiusMiles ?? 0, lower);
+      next.radiusMiles = Math.min(next.radiusMiles ?? 100, upper);
+    }
+    return next;
+  }
+
+  const singlePatterns = [
     new RegExp(`\\bwithin\\s+(?:a\\s+)?(\\d+(?:\\.\\d+)?)\\s*[- ]?(${RADIUS_UNITS})\\b`, "i"),
     new RegExp(`\\bradius(?:\\s+of)?\\s+(\\d+(?:\\.\\d+)?)\\s*[- ]?(${RADIUS_UNITS})\\b`, "i"),
     new RegExp(`\\b(\\d+(?:\\.\\d+)?)\\s*[- ]?(${RADIUS_UNITS})\\s+(?:radius|of|from|around)\\b`, "i"),
   ];
 
-  for (const pattern of patterns) {
+  for (const pattern of singlePatterns) {
     const match = normalized.match(pattern);
     if (!match) continue;
     const radiusMiles = parseRadiusMiles(match[1], match[2]);
-    if (radiusMiles !== undefined && radiusMiles > 0) next.radiusMiles = radiusMiles;
+    if (radiusMiles !== undefined && radiusMiles > 0) {
+      next.radiusMiles = Math.min(next.radiusMiles ?? 100, radiusMiles);
+    }
     break;
   }
 
@@ -103,22 +132,56 @@ function extractPrice(query: string, filters: SearchFilters) {
   const normalized = normalize(query);
   const next = { ...filters };
 
-  const between = normalized.match(/(?:between|from)\s+([^\s]+(?:\s*(?:m|million|k|thousand))?)\s+(?:and|to)\s+([^\s]+(?:\s*(?:m|million|k|thousand))?)/i);
-  if (between) {
-    const min = parseMoney(between[1]);
-    const max = parseMoney(between[2]);
-    if (min !== undefined) next.minPrice = Math.max(next.minPrice ?? 0, min);
+  // Recognize money bands such as "in 2-2.5m AED", "AED 2m to 2.5m",
+  // "between 2 and 2.5 million", and "2,000,000-2,500,000 AED".
+  // The money-marker check deliberately prevents distance bands like
+  // "within 1.5-2.4 miles" from being mistaken for AED price bands.
+  const rangeRegex = new RegExp(MONEY_RANGE_SOURCE, "gi");
+  let rangeMatch: RegExpExecArray | null;
+  while ((rangeMatch = rangeRegex.exec(normalized)) !== null) {
+    const [, prefixCurrency, firstAmount, firstScale, secondAmount, secondScale, suffixCurrency] = rangeMatch;
+    if (!prefixCurrency && !firstScale && !secondScale && !suffixCurrency) continue;
+
+    // A suffix on one endpoint applies to both endpoints when the other is bare,
+    // e.g. "2-2.5m AED" means AED 2m through AED 2.5m.
+    const sharedScale = firstScale || secondScale;
+    const minimum = parseMoneyWithScale(firstAmount, firstScale || sharedScale);
+    const maximum = parseMoneyWithScale(secondAmount, secondScale || sharedScale);
+    if (minimum === undefined || maximum === undefined) continue;
+
+    const lower = Math.min(minimum, maximum);
+    const upper = Math.max(minimum, maximum);
+    next.minPrice = Math.max(next.minPrice ?? 0, lower);
+    next.maxPrice = Math.min(next.maxPrice ?? Number.MAX_SAFE_INTEGER, upper);
+    return next;
+  }
+
+  // In real-estate searches, "in 3.5m" / "in 3.5 m" is treated as a budget
+  // ceiling. An explicit lower-to-upper range above takes precedence.
+  const budgetMatch = normalized.match(
+    new RegExp(
+      `\\b(?:in|for|budget(?:\\s+of)?|priced\\s+at|price\\s+of)\\s+(?:aed\\s*)?(${NUMBER_PATTERN})\\s*(${MONEY_SCALE_PATTERN})\\b(?:\\s*(?:aed|dirhams?))?`,
+      "i",
+    ),
+  );
+  if (budgetMatch) {
+    const max = parseMoneyWithScale(budgetMatch[1], budgetMatch[2]);
     if (max !== undefined) next.maxPrice = Math.min(next.maxPrice ?? Number.MAX_SAFE_INTEGER, max);
     return next;
   }
 
-  const maxMatch = normalized.match(/(?:under|below|up to|no more than|not more than|maximum|max(?:imum)?(?: price)?(?: of)?)\s+([^\s]+)/i);
+  const amountPattern = String.raw`(${NUMBER_PATTERN}\s*(?:million|thousand|m|k)?)`;
+  const maxMatch = normalized.match(
+    new RegExp(String.raw`(?:under|below|up to|no more than|not more than|maximum|max(?:imum)?(?: price)?(?: of)?)\s+${amountPattern}`, "i"),
+  );
   if (maxMatch) {
     const max = parseMoney(maxMatch[1]);
     if (max !== undefined) next.maxPrice = Math.min(next.maxPrice ?? Number.MAX_SAFE_INTEGER, max);
   }
 
-  const minMatch = normalized.match(/(?:over|above|at least|minimum|min(?:imum)?(?: price)?(?: of)?)\s+([^\s]+)/i);
+  const minMatch = normalized.match(
+    new RegExp(String.raw`(?:over|above|at least|minimum|min(?:imum)?(?: price)?(?: of)?)\s+${amountPattern}`, "i"),
+  );
   if (minMatch) {
     const min = parseMoney(minMatch[1]);
     if (min !== undefined) next.minPrice = Math.max(next.minPrice ?? 0, min);
@@ -169,6 +232,7 @@ export function extractExplicitFilterPatch(query: string): SearchFilters {
     "maxPrice",
     "minBeds",
     "maxBeds",
+    "minRadiusMiles",
     "radiusMiles",
   ] as const) {
     const value = withRadius[key];
@@ -178,18 +242,59 @@ export function extractExplicitFilterPatch(query: string): SearchFilters {
   return patch;
 }
 
+/**
+ * Explicit constraints in the current query replace stale values for the same
+ * filter dimension, while unrelated UI filters remain active. Without this,
+ * a previous 1-mile UI radius could be intersected with a new 1.5-2.4-mile
+ * query (producing an impossible 1.5-to-1 range), or a previous AED 1m cap
+ * could conflict with a new AED 2m-2.5m range.
+ */
+function applyExplicitQueryFilters(query: string, filters: SearchFilters): SearchFilters {
+  const next: SearchFilters = { ...filters };
+
+  const pricePatch = extractPrice(query, {});
+  if (pricePatch.minPrice !== undefined || pricePatch.maxPrice !== undefined) {
+    delete next.minPrice;
+    delete next.maxPrice;
+    if (pricePatch.minPrice !== undefined) next.minPrice = pricePatch.minPrice;
+    if (pricePatch.maxPrice !== undefined) next.maxPrice = pricePatch.maxPrice;
+  }
+
+  const bedPatch = extractBeds(query, {});
+  if (bedPatch.minBeds !== undefined || bedPatch.maxBeds !== undefined) {
+    delete next.minBeds;
+    delete next.maxBeds;
+    if (bedPatch.minBeds !== undefined) next.minBeds = bedPatch.minBeds;
+    if (bedPatch.maxBeds !== undefined) next.maxBeds = bedPatch.maxBeds;
+  }
+
+  const radiusPatch = extractRadius(query, {});
+  if (radiusPatch.minRadiusMiles !== undefined || radiusPatch.radiusMiles !== undefined) {
+    delete next.minRadiusMiles;
+    delete next.radiusMiles;
+    if (radiusPatch.minRadiusMiles !== undefined) next.minRadiusMiles = radiusPatch.minRadiusMiles;
+    if (radiusPatch.radiusMiles !== undefined) next.radiusMiles = radiusPatch.radiusMiles;
+  }
+
+  return next;
+}
+
 export function understandQuery(query: string, filters: SearchFilters): QueryPlan {
   const normalized = normalize(query);
-  const nextFilters = extractRadius(
-    normalized,
-    extractBeds(normalized, extractPrice(normalized, filters)),
-  );
+  const nextFilters = applyExplicitQueryFilters(normalized, filters);
   const hardConstraints: string[] = [];
 
-  const hasRadiusInQuery = nextFilters.radiusMiles !== filters.radiusMiles && /\b(?:within|radius|miles?|mi|kilometers?|kilometres?|km)\b/i.test(normalized);
+  const hasRadiusInQuery = /\b(?:within|radius|miles?|mi|kilometers?|kilometres?|km)\b/i.test(normalized);
   if (hasRadiusInQuery && nextFilters.radiusMiles !== undefined) {
-    hardConstraints.push(`radius <= ${nextFilters.radiusMiles} miles`);
+    if (nextFilters.minRadiusMiles !== undefined && nextFilters.minRadiusMiles > 0) {
+      hardConstraints.push(`distance between ${nextFilters.minRadiusMiles} and ${nextFilters.radiusMiles} miles`);
+    } else {
+      hardConstraints.push(`radius <= ${nextFilters.radiusMiles} miles`);
+    }
   }
+
+  if (nextFilters.minPrice !== undefined) hardConstraints.push(`price >= AED ${nextFilters.minPrice}`);
+  if (nextFilters.maxPrice !== undefined) hardConstraints.push(`price <= AED ${nextFilters.maxPrice}`);
 
   const propertyType = PROPERTY_TYPES.find((value) => {
     const pattern = new RegExp(`\\b${value.toLowerCase()}(?:s)?\\b`, "i");
@@ -206,8 +311,8 @@ export function understandQuery(query: string, filters: SearchFilters): QueryPla
   const city = normalized.includes("dubai") ? "Dubai" : undefined;
   if (city) hardConstraints.push("city = Dubai");
 
-  // The original query remains the semantic signal. Explicit structured facts
-  // are additionally passed to SQL so they cannot be washed out by embeddings.
+  // Explicit facts are sent to SQL as structured constraints rather than
+  // relying on an embedding to infer numeric ranges.
   return {
     originalQuery: query,
     semanticQuery: query.trim(),

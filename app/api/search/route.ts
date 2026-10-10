@@ -14,6 +14,7 @@ const schema = z.object({
     locationText: z.string().max(100).optional(),
     lat: z.number().optional(),
     lng: z.number().optional(),
+    minRadiusMiles: z.number().positive().max(100).optional(),
     radiusMiles: z.number().positive().max(100).optional(),
   }).default({}),
 });
@@ -21,17 +22,13 @@ const schema = z.object({
 export async function POST(request: Request) {
   try {
     const body = schema.parse(await request.json());
-    const { results, explanations, hardConstraints } = await semanticSearch(body.query, body.filters);
+    const { results, explanations } = await semanticSearch(body.query, body.filters);
 
     return NextResponse.json({
       query: body.query,
       results,
       explanations,
-      meta: {
-        count: results.length,
-        model: searchConfig.llmModel,
-        hardConstraints,
-      },
+      meta: { count: results.length, model: searchConfig.llmModel },
     });
   } catch (error) {
     const message = error instanceof Error ? error.message : "Unexpected search error.";

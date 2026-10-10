@@ -43,10 +43,38 @@ function escapeRegExp(value: string) {
   return value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 }
 
-/** Remove an area-only location phrase so radius search can retrieve nearby homes. */
+/** Remove explicit price amounts before embedding the remaining semantic intent. */
+function stripPriceLanguage(query: string) {
+  query = query.replace(/[–—]/g, "-");
+  const number = String.raw`(?:\d{1,3}(?:,\d{3})+|\d+)(?:\.\d+)?`;
+  const scale = String.raw`(?:million|thousand|m(?!iles?\b)|k)`;
+  const rangeRegex = new RegExp(
+    String.raw`\b(?:between|from|in|budget(?:\s+of)?|priced\s+between)?\s*(?:aed\s*)?${number}\s*(?:${scale})?\s*(?:-|to|and)\s*(?:aed\s*)?${number}\s*(?:${scale})?\s*(?:aed|dirhams?)?\b`,
+    "gi",
+  );
+
+  let cleaned = query.replace(rangeRegex, (match) => {
+    const hasMoneyMarker = /\baed\b|\bdirhams?\b|\b(?:million|thousand|k)\b|\d\s*m(?!iles?\b)\b/i.test(match);
+    return hasMoneyMarker ? " " : match;
+  });
+
+  const cue = String.raw`(?:in|for|budget(?:\s+of)?|priced\s+at|price\s+of|under|below|up\s+to|no\s+more\s+than|not\s+more\s+than|over|above|at\s+least|minimum(?:\s+price)?(?:\s+of)?|maximum(?:\s+price)?(?:\s+of)?)`;
+  const singlePriceRegex = new RegExp(
+    String.raw`\b${cue}\s+(?:aed\s*)?${number}\s*${scale}\b(?:\s*(?:aed|dirhams?))?`,
+    "gi",
+  );
+  cleaned = cleaned.replace(singlePriceRegex, " ");
+  return cleaned.replace(/\s+/g, " ").trim();
+}
+
+/** Remove distance bands/limits and the anchor area from the embedding text. */
 function queryForRadiusSearch(query: string, area?: string) {
-  // Radius constraints belong in structured SQL filtering, not the embedding text.
+  query = query.replace(/[–—]/g, "-");
+  // Match the full range first; otherwise a simple-radius regex can leave a
+  // dangling `within 1.5-` fragment for a query like `within 1.5-2.4 miles`.
   const withoutRadiusLanguage = query
+    .replace(/\bwithin\s+(?:a\s+)?\d+(?:\.\d+)?\s*(?:-|to)\s*\d+(?:\.\d+)?\s*[- ]?(?:miles?|mi|kilometers?|kilometres?|km)\b/gi, " ")
+    .replace(/\b(?:between|from)\s+\d+(?:\.\d+)?\s*(?:-|to|and)\s*\d+(?:\.\d+)?\s*[- ]?(?:miles?|mi|kilometers?|kilometres?|km)\b/gi, " ")
     .replace(/\bwithin\s+(?:a\s+)?\d+(?:\.\d+)?\s*[- ]?(?:miles?|mi|kilometers?|kilometres?|km)(?:\s+radius)?(?:\s+(?:of|from|around))?\b/gi, " ")
     .replace(/\bradius(?:\s+of)?\s+\d+(?:\.\d+)?\s*[- ]?(?:miles?|mi|kilometers?|kilometres?|km)\b/gi, " ")
     .replace(/\b\d+(?:\.\d+)?\s*[- ]?(?:miles?|mi|kilometers?|kilometres?|km)\s+(?:radius|of|from|around)\b/gi, " ");
@@ -64,7 +92,6 @@ function queryForRadiusSearch(query: string, area?: string) {
 
   return cleaned || "homes for sale in Dubai";
 }
-
 
 function haversineMiles(lat1: number, lng1: number, lat2: number, lng2: number) {
   const toRadians = (value: number) => (value * Math.PI) / 180;
@@ -93,8 +120,9 @@ export async function semanticSearch(
   const centerLat = plan.filters.lat ?? inferredCenter?.lat;
   const centerLng = plan.filters.lng ?? inferredCenter?.lng;
   const radiusMiles = plan.filters.radiusMiles;
-  const radiusRequested = radiusMiles !== undefined;
-  const radiusActive = radiusRequested && centerLat !== undefined && centerLng !== undefined;
+  const minRadiusMiles = plan.filters.minRadiusMiles;
+  const radiusRequested = radiusMiles !== undefined || minRadiusMiles !== undefined;
+  const radiusActive = radiusMiles !== undefined && centerLat !== undefined && centerLng !== undefined;
 
   if (radiusRequested && !radiusActive) {
     throw new Error(
@@ -102,9 +130,10 @@ export async function semanticSearch(
     );
   }
 
+  const queryWithoutPrice = stripPriceLanguage(plan.semanticQuery);
   const semanticQuery = radiusActive
-    ? queryForRadiusSearch(plan.semanticQuery, plan.area)
-    : plan.semanticQuery;
+    ? queryForRadiusSearch(queryWithoutPrice, plan.area)
+    : queryWithoutPrice || plan.semanticQuery.trim();
   const [embedding] = await embedText(semanticQuery);
   if (!embedding) throw new Error("Failed to create a query embedding.");
 
@@ -123,6 +152,7 @@ export async function semanticSearch(
     center_lat: centerLat ?? null,
     center_lng: centerLng ?? null,
     radius_miles: radiusMiles ?? null,
+    min_radius_miles: minRadiusMiles ?? null,
     result_limit: RESULT_LIMIT,
     min_match_score: MIN_MATCH_SCORE,
   });
@@ -153,6 +183,7 @@ export async function semanticSearch(
         ? haversineMiles(centerLat, centerLng, row.latitude, row.longitude)
         : undefined),
     distanceOrigin: locationAnchor ?? undefined,
+    minRadiusMiles: plan.filters.minRadiusMiles,
     radiusMiles: plan.filters.radiusMiles,
   }));
 

@@ -6,6 +6,7 @@ export type SearchFilters = {
   locationText?: string;
   lat?: number;
   lng?: number;
+  minRadiusMiles?: number;
   radiusMiles?: number;
 };
 
@@ -28,6 +29,7 @@ export type Listing = {
   matchedSignals?: string[];
   distanceMiles?: number;
   distanceOrigin?: string;
+  minRadiusMiles?: number;
   radiusMiles?: number;
 };
 
