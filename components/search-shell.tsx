@@ -4,6 +4,7 @@ import { useMemo, useState } from "react";
 import { ArrowUpRight, ChevronDown, Loader2, Search, SlidersHorizontal, Sparkles, WandSparkles } from "lucide-react";
 import { ListingCard } from "./listing-card";
 import type { SearchFilters, SearchResponse } from "@/lib/types";
+import { resolveAreaCenter } from "@/lib/area-centers";
 
 const suggestions = [
   "A quiet family villa near good schools, not on a main road, bright kitchen, room for two cars",
@@ -13,18 +14,7 @@ const suggestions = [
 
 const defaultFilters: SearchFilters = {};
 
-const areaCenters: Record<string, { lat: number; lng: number }> = {
-  "Jumeirah Park": { lat: 25.0414, lng: 55.1536 },
-  "Arabian Ranches": { lat: 25.0576, lng: 55.2708 },
-  "The Springs": { lat: 25.0628, lng: 55.2018 },
-  "Mirdif": { lat: 25.2339, lng: 55.4212 },
-  "Al Barsha": { lat: 25.1121, lng: 55.2015 },
-  "Jumeirah": { lat: 25.2048, lng: 55.2708 },
-  "Mudon": { lat: 25.0147, lng: 55.3271 },
-  "Town Square": { lat: 25.0034, lng: 55.2921 },
-  "Dubai Creek Harbour": { lat: 25.2063, lng: 55.3435 },
-  "Al Safa": { lat: 25.1812, lng: 55.2361 },
-};
+
 
 
 export function SearchShell() {
@@ -177,7 +167,7 @@ export function SearchShell() {
                     value={filters.locationText ?? ""}
                     onChange={(e) => {
                       const value = e.target.value;
-                      const center = areaCenters[value];
+                      const center = resolveAreaCenter(value);
                       setFilters((f) => ({
                         ...f,
                         locationText: value || undefined,
@@ -200,15 +190,23 @@ export function SearchShell() {
                     placeholder="10"
                     className="h-10 w-full rounded-xl border border-[#dedbd2] bg-white px-3 text-sm outline-none focus:border-[#92a697]"
                   />
-                  <div className="mt-1 text-[10px] leading-4 text-[#898d87]">Uses the selected area's demo center as the geospatial origin.</div>
+                  <div className="mt-1 text-[10px] leading-4 text-[#898d87]">Uses an approximate center for supported areas; radius searches are straight-line distance.</div>
                 </div>
-                <div className="flex items-end">
+                <div className="flex items-end gap-2">
+                  <button
+                    type="button"
+                    disabled={busy || refining}
+                    onClick={() => runSearch(query || draftQuery, filters)}
+                    className="h-10 flex-1 rounded-xl bg-[#2f4736] px-3 text-sm font-semibold text-white disabled:opacity-60"
+                  >
+                    Apply filters
+                  </button>
                   <button
                     type="button"
                     onClick={() => setFilters(defaultFilters)}
-                    className="h-10 w-full rounded-xl border border-[#dedbd2] bg-white text-sm font-medium text-[#636860]"
+                    className="h-10 flex-1 rounded-xl border border-[#dedbd2] bg-white px-3 text-sm font-medium text-[#636860]"
                   >
-                    Reset filters
+                    Reset
                   </button>
                 </div>
               </div>
@@ -256,14 +254,7 @@ export function SearchShell() {
                 <div>
                   <div className="text-xs font-semibold uppercase tracking-[0.14em] text-[#748076]">Ranked results</div>
                   <h2 className="mt-2 text-2xl font-semibold tracking-[-0.03em]">{results.results.length} homes matched your description</h2>
-                  <div className="mt-1 flex flex-wrap items-center gap-x-3 gap-y-1 text-sm text-[#737871]">
-                    <span>Searched for “{results.query}”</span>
-                    {activeFilters.radiusMiles && activeFilters.lat !== undefined && activeFilters.lng !== undefined && (
-                      <span className="font-medium text-[#526458]">
-                        Within {activeFilters.radiusMiles} mi of {activeFilters.locationText || "the selected center"}
-                      </span>
-                    )}
-                  </div>
+                  <p className="mt-1 text-sm text-[#737871]">Searched for “{results.query}”</p>
                 </div>
                 <div className="hidden rounded-full border border-[#dcd9d1] bg-white/65 px-3 py-1.5 text-xs text-[#6c736c] sm:block">Only strong matches · semantic rank</div>
               </div>

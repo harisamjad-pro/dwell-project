@@ -5,6 +5,7 @@ import { buildExplanationMessages } from "./prompts";
 import { understandQuery } from "./query-understanding";
 import type { Listing, SearchFilters } from "./types";
 import { env } from "./env";
+import { resolveAreaCenter } from "./area-centers";
 
 const rowSchema = z.object({
   id: z.string(),
@@ -38,6 +39,27 @@ const explanationSchema = z.object({
 const RESULT_LIMIT = 20;
 const MIN_MATCH_SCORE = 0.34;
 
+function escapeRegExp(value: string) {
+  return value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+}
+
+/** Remove an area-only location phrase so radius search can retrieve nearby homes. */
+function queryForRadiusSearch(query: string, area?: string) {
+  if (!area || !new RegExp(`\\b${escapeRegExp(area)}\\b`, "i").test(query)) {
+    return query.trim();
+  }
+
+  const cleaned = query
+    .replace(new RegExp(escapeRegExp(area), "ig"), " ")
+    .replace(/\b(?:near|in|at|around|within|close\s+to|close|by|from|to|the|a|an|of|for|sale|homes?|properties?|real\s+estate)\b/gi, " ")
+    .replace(/[^\p{L}\p{N}]+/gu, " ")
+    .replace(/\s+/g, " ")
+    .trim();
+
+  return cleaned || "homes for sale in Dubai";
+}
+
+
 function haversineMiles(lat1: number, lng1: number, lat2: number, lng2: number) {
   const toRadians = (value: number) => (value * Math.PI) / 180;
   const earthRadiusMiles = 3958.7613;
@@ -60,13 +82,30 @@ export async function semanticSearch(
   hardConstraints: string[];
 }> {
   const plan = understandQuery(query, filters);
-  const [embedding] = await embedText(plan.semanticQuery);
+  const locationAnchor = plan.filters.locationText?.trim() || plan.area || plan.city;
+  const inferredCenter = resolveAreaCenter(locationAnchor);
+  const centerLat = plan.filters.lat ?? inferredCenter?.lat;
+  const centerLng = plan.filters.lng ?? inferredCenter?.lng;
+  const radiusMiles = plan.filters.radiusMiles;
+  const radiusRequested = radiusMiles !== undefined;
+  const radiusActive = radiusRequested && centerLat !== undefined && centerLng !== undefined;
+
+  if (radiusRequested && !radiusActive) {
+    throw new Error(
+      "Radius filtering needs a recognized area. Enter a supported Dubai area in Area / city or include it in your search (for example, Business Bay).",
+    );
+  }
+
+  const semanticQuery = radiusActive
+    ? queryForRadiusSearch(plan.semanticQuery, plan.area)
+    : plan.semanticQuery;
+  const [embedding] = await embedText(semanticQuery);
   if (!embedding) throw new Error("Failed to create a query embedding.");
 
   const supabase = getSupabase();
   const { data, error } = await supabase.rpc("search_dwell_listings", {
     query_embedding: embedding,
-    query_text: query,
+    query_text: semanticQuery,
     query_property_type: plan.propertyType ?? null,
     query_area: plan.area ?? null,
     query_city: plan.city ?? null,
@@ -74,10 +113,10 @@ export async function semanticSearch(
     max_price: plan.filters.maxPrice ?? null,
     min_beds: plan.filters.minBeds ?? null,
     max_beds: plan.filters.maxBeds ?? null,
-    location_text: plan.filters.locationText?.trim() || null,
-    center_lat: plan.filters.lat ?? null,
-    center_lng: plan.filters.lng ?? null,
-    radius_miles: plan.filters.radiusMiles ?? null,
+    location_text: plan.filters.locationText?.trim() || (radiusActive ? locationAnchor ?? null : null),
+    center_lat: centerLat ?? null,
+    center_lng: centerLng ?? null,
+    radius_miles: radiusMiles ?? null,
     result_limit: RESULT_LIMIT,
     min_match_score: MIN_MATCH_SCORE,
   });
@@ -104,11 +143,10 @@ export async function semanticSearch(
     matchedSignals: row.matched_signals ?? undefined,
     distanceMiles:
       row.distance_miles ??
-      (plan.filters.lat !== undefined && plan.filters.lng !== undefined
-        ? haversineMiles(plan.filters.lat, plan.filters.lng, row.latitude, row.longitude)
+      (centerLat !== undefined && centerLng !== undefined
+        ? haversineMiles(centerLat, centerLng, row.latitude, row.longitude)
         : undefined),
-    distanceOrigin:
-      plan.area ?? plan.filters.locationText?.trim() ?? undefined,
+    distanceOrigin: locationAnchor ?? undefined,
     radiusMiles: plan.filters.radiusMiles,
   }));
 
